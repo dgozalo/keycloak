@@ -27,8 +27,9 @@
             <div class="form-group" data-ng-show="protocol === 'openid-connect' && isDynamicScope && serverInfo.featureEnabled('DYNAMIC_SCOPES')">
                 <label class="col-md-2 control-label" for="dynamicScopeRegExp">{{:: 'client-scope.dynamic-scope-regexp' | translate}} <span class="required">*</span></label>
                 <div class="col-sm-6">
-                    <input class="form-control" ng-readonly="true" type="text" ng-pattern="/^(\w+\:)+(\*){1}(\:\w+)*$/"
-                           ng-value="dynamicScopeRegExp || clientScope.name+':*'" id="dynamicScopeRegExp" name="dynamicScopeRegExp"
+                    <input class="form-control" ng-readonly="true" type="text"
+                           ng-value="(isDynamicScope && serverInfo.featureEnabled('DYNAMIC_SCOPES')) ? clientScope.attributes['dynamic.scope.regexp'] = clientScope.name+':*' : ''"
+                           id="dynamicScopeRegExp" name="dynamicScopeRegExp"
                            data-ng-model="clientScope.attributes['dynamic.scope.regexp']" autofocus ng-disabled="!isDynamicScope"
                            ng-required="isDynamicScope">
                 </div>

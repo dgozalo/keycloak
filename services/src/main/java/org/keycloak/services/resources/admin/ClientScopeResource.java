@@ -19,6 +19,8 @@ package org.keycloak.services.resources.admin;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
+import org.keycloak.common.Profile;
+import org.keycloak.events.Errors;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientScopeModel;
@@ -30,6 +32,7 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.services.ErrorResponse;
+import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
 import javax.ws.rs.Consumes;
@@ -40,6 +43,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import java.util.regex.Pattern;
 
 
 /**
@@ -56,6 +61,7 @@ public class ClientScopeResource {
     private AdminEventBuilder adminEvent;
     protected ClientScopeModel clientScope;
     protected KeycloakSession session;
+    protected static Pattern dynamicScreenPattern = Pattern.compile("(\\w+\\:)+(\\*){1}(\\:\\w+)*");
 
     public ClientScopeResource(RealmModel realm, AdminPermissionEvaluator auth, ClientScopeModel clientScope, KeycloakSession session, AdminEventBuilder adminEvent) {
         this.realm = realm;
@@ -96,7 +102,7 @@ public class ClientScopeResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(final ClientScopeRepresentation rep) {
         auth.clients().requireManageClientScopes();
-
+        validateDynamicClientScope(rep);
         try {
             RepresentationToModel.updateClientScope(rep, clientScope);
             adminEvent.operation(OperationType.UPDATE).resourcePath(session.getContext().getUri()).representation(rep).success();
@@ -141,6 +147,18 @@ public class ClientScopeResource {
             return Response.noContent().build();
         } catch (ModelException me) {
             return ErrorResponse.error(me.getMessage(), Response.Status.BAD_REQUEST);
+        }
+    }
+
+    public static void validateDynamicClientScope(ClientScopeRepresentation clientScope) throws ErrorResponseException {
+        logger.info("Validating client scope");
+        if(Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES)) {
+            logger.info("Validating dynamic scope");
+            boolean isDynamicScope = Boolean.parseBoolean(clientScope.getAttributes().get(ClientScopeModel.IS_DYNAMIC_SCOPE));
+            // We don't need to run the validation if it's not a dynamic scope, because the regex may be empty.
+            if(isDynamicScope && !dynamicScreenPattern.matcher(clientScope.getAttributes().get(ClientScopeModel.DYNAMIC_SCOPE_REGEXP)).matches()) {
+                throw new ErrorResponseException(ErrorResponse.error("Invalid format for the Dynamic Scope regexp", Response.Status.BAD_REQUEST));
+            }
         }
     }
 }

@@ -24,10 +24,12 @@ import org.keycloak.admin.client.resource.ClientScopesResource;
 import org.keycloak.admin.client.resource.ProtocolMappersResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleMappingResource;
+import org.keycloak.common.Profile;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.AccountRoles;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.Constants;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.saml.SamlProtocol;
@@ -37,7 +39,9 @@ import org.keycloak.representations.idm.ErrorRepresentation;
 import org.keycloak.representations.idm.MappingsRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.testsuite.ProfileAssume;
 import org.keycloak.testsuite.admin.ApiUtil;
+import org.keycloak.testsuite.arquillian.annotation.EnableFeature;
 import org.keycloak.testsuite.util.AdminEventPaths;
 import org.keycloak.testsuite.util.ClientBuilder;
 import org.keycloak.testsuite.util.Matchers;
@@ -58,6 +62,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.keycloak.common.Profile.Feature.AUTHORIZATION;
 import static org.keycloak.testsuite.Assert.assertNames;
 
 /**
@@ -651,6 +656,41 @@ public class ClientScopeTest extends AbstractClientTest {
         //update client - check it passes (it used to throw ModelDuplicateException before)
         clientRep.setDescription("new_description");
         testRealmResource().clients().get(clientUuid).update(clientRep);
+    }
+
+    @Test
+    public void testCreateValidDynamicScope() {
+        ProfileAssume.assumeFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES);
+        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("dynamic-scope-def");
+        scopeRep.setProtocol("openid-connect");
+        scopeRep.setAttributes(new HashMap<String, String>(){{
+            put(ClientScopeModel.IS_DYNAMIC_SCOPE, "true");
+            put(ClientScopeModel.DYNAMIC_SCOPE_REGEXP, "dynamic-scope-def:*");
+        }});
+        String scopeDefId = createClientScope(scopeRep);
+        getCleanup().addClientScopeId(scopeDefId);
+
+        // Assert updated attributes
+        scopeRep = clientScopes().get(scopeDefId).toRepresentation();
+        assertEquals("dynamic-scope-def", scopeRep.getName());
+        assertEquals("true", scopeRep.getAttributes().get(ClientScopeModel.IS_DYNAMIC_SCOPE));
+        assertEquals("dynamic-scope-def:*", scopeRep.getAttributes().get(ClientScopeModel.DYNAMIC_SCOPE_REGEXP));
+    }
+
+    @Test
+    public void testCreateInvalidRegexpDynamicScope() {
+        ProfileAssume.assumeFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES);
+        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("dynamic-scope-def");
+        scopeRep.setProtocol("openid-connect");
+        scopeRep.setAttributes(new HashMap<String, String>(){{
+            put(ClientScopeModel.IS_DYNAMIC_SCOPE, "true");
+            put(ClientScopeModel.DYNAMIC_SCOPE_REGEXP, "dynamic-scope-def:*:*");
+        }});
+        String scopeDefId = createClientScope(scopeRep);
+        getCleanup().addClientScopeId(scopeDefId);
+        assertEquals(0, clientScopes().findAll().stream().filter(s -> s.getName().equalsIgnoreCase(scopeRep.getName())).count());
     }
 
     private ClientScopesResource clientScopes() {
