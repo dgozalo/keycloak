@@ -27,6 +27,8 @@ import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.par.endpoints.request.AuthzEndpointParParser;
+import org.keycloak.protocol.oidc.rar.AuthorizationRequestParserProvider;
+import org.keycloak.protocol.oidc.rar.ClientScopeRARParserProviderFactory;
 import org.keycloak.protocol.oidc.utils.RedirectUtils;
 import org.keycloak.services.ErrorPageException;
 import org.keycloak.services.ServicesLogger;
@@ -95,6 +97,16 @@ public class AuthorizationEndpointRequestParserProcessor {
                     }
                 }
             }
+
+            AuthorizationRequestParserProvider clientScopeParser = session.getProvider(AuthorizationRequestParserProvider.class,
+                    ClientScopeRARParserProviderFactory.CLIENT_SCOPE_PARSER_ID);
+
+            if(clientScopeParser == null) {
+                throw new RuntimeException(String.format("No provider found for authorization requests parser %1s",
+                        ClientScopeRARParserProviderFactory.CLIENT_SCOPE_PARSER_ID));
+            }
+
+            request.authorizationRequestContext = clientScopeParser.parseScopes(request.getScope(), client);
 
             return request;
 

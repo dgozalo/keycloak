@@ -20,6 +20,7 @@ package org.keycloak.models;
 
 import java.util.Map;
 
+import org.keycloak.rar.AuthorizationRequestContext;
 import org.keycloak.sessions.CommonClientSessionModel;
 import org.keycloak.storage.SearchableModelField;
 
@@ -66,4 +67,6 @@ public interface AuthenticatedClientSessionModel extends CommonClientSessionMode
     void setNote(String name, String value);
     void removeNote(String name);
     Map<String, String> getNotes();
+    void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext);
+    AuthorizationRequestContext getAuthorizationRequestContext();
 }

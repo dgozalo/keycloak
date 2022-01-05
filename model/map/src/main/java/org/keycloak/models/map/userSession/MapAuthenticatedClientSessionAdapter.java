@@ -20,6 +20,7 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
+import org.keycloak.rar.AuthorizationRequestContext;
 
 import java.util.Map;
 
@@ -139,6 +140,16 @@ public abstract class MapAuthenticatedClientSessionAdapter extends AbstractAuthe
     @Override
     public void setProtocol(String method) {
         entity.setAuthMethod(method);
+    }
+
+    @Override
+    public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+        this.entity.setAuthorizationRequestContext(authorizationRequestContext);
+    }
+
+    @Override
+    public AuthorizationRequestContext getAuthorizationRequestContext() {
+        return entity.getAuthorizationRequestContext();
     }
 
     @Override

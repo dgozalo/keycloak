@@ -28,6 +28,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticationSessionEntity;
+import org.keycloak.rar.AuthorizationRequestContext;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 
@@ -108,6 +109,17 @@ public class AuthenticationSessionAdapter implements AuthenticationSessionModel 
     public void setClientScopes(Set<String> clientScopes) {
         entity.setClientScopes(clientScopes);
         update();
+    }
+
+    @Override
+    public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+        entity.setAuthorizationRequestContext(authorizationRequestContext);
+        update();
+    }
+
+    @Override
+    public AuthorizationRequestContext getAuthorizationRequestContext() {
+        return entity.getAuthorizationRequestContext();
     }
 
     @Override

@@ -21,6 +21,7 @@ import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
+import org.keycloak.rar.AuthorizationRequestContext;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.CommonClientSessionModel.ExecutionStatus;
 
@@ -56,6 +57,8 @@ public class AuthenticationSessionEntity implements Serializable {
     private Set<String> requiredActions  = ConcurrentHashMap.newKeySet();
     private Map<String, String> userSessionNotes;
 
+    private AuthorizationRequestContext authorizationRequestContext;
+
     public AuthenticationSessionEntity() {
     }
 
@@ -65,8 +68,8 @@ public class AuthenticationSessionEntity implements Serializable {
       int timestamp,
       String redirectUri, String action, Set<String> clientScopes,
       Map<String, AuthenticationSessionModel.ExecutionStatus> executionStatus, String protocol,
-      Map<String, String> clientNotes, Map<String, String> authNotes, Set<String> requiredActions, Map<String, String> userSessionNotes) {
-        this(clientUUID, authUserId, redirectUri, action, clientScopes, executionStatus, protocol, clientNotes, authNotes, requiredActions, userSessionNotes);
+      Map<String, String> clientNotes, Map<String, String> authNotes, Set<String> requiredActions, Map<String, String> userSessionNotes, AuthorizationRequestContext authorizationRequestContext) {
+        this(clientUUID, authUserId, redirectUri, action, clientScopes, executionStatus, protocol, clientNotes, authNotes, requiredActions, userSessionNotes, authorizationRequestContext);
         this.timestamp = timestamp;
     }
 
@@ -75,7 +78,7 @@ public class AuthenticationSessionEntity implements Serializable {
             String authUserId,
             String redirectUri, String action, Set<String> clientScopes,
             Map<String, AuthenticationSessionModel.ExecutionStatus> executionStatus, String protocol,
-            Map<String, String> clientNotes, Map<String, String> authNotes, Set<String> requiredActions, Map<String, String> userSessionNotes) {
+            Map<String, String> clientNotes, Map<String, String> authNotes, Set<String> requiredActions, Map<String, String> userSessionNotes, AuthorizationRequestContext authorizationRequestContext) {
         this.clientUUID = clientUUID;
 
         this.authUserId = authUserId;
@@ -189,6 +192,14 @@ public class AuthenticationSessionEntity implements Serializable {
         this.authNotes = authNotes;
     }
 
+    public AuthorizationRequestContext getAuthorizationRequestContext() {
+        return authorizationRequestContext;
+    }
+
+    public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+        this.authorizationRequestContext = authorizationRequestContext;
+    }
+
     public static class ExternalizerImpl implements Externalizer<AuthenticationSessionEntity> {
 
         private static final int VERSION_1 = 1;
@@ -237,6 +248,7 @@ public class AuthenticationSessionEntity implements Serializable {
             KeycloakMarshallUtil.writeMap(value.authNotes, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, output);
             KeycloakMarshallUtil.writeCollection(value.requiredActions, KeycloakMarshallUtil.STRING_EXT, output);
             KeycloakMarshallUtil.writeMap(value.userSessionNotes, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, output);
+            output.writeObject(value.authorizationRequestContext);
         }
 
         @Override
@@ -267,7 +279,8 @@ public class AuthenticationSessionEntity implements Serializable {
               KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)), // clientNotes
               KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)), // authNotes
               KeycloakMarshallUtil.readCollection(input, KeycloakMarshallUtil.STRING_EXT, ConcurrentHashMap::newKeySet),  // requiredActions
-              KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)) // userSessionNotes
+              KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)), // userSessionNotes
+                    (AuthorizationRequestContext) input.readObject()
             );
         }
 
@@ -289,7 +302,8 @@ public class AuthenticationSessionEntity implements Serializable {
                     KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)), // clientNotes
                     KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)), // authNotes
                     KeycloakMarshallUtil.readCollection(input, KeycloakMarshallUtil.STRING_EXT, ConcurrentHashMap::newKeySet),  // requiredActions
-                    KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)) // userSessionNotes
+                    KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)), // userSessionNotes
+                    (AuthorizationRequestContext) input.readObject()
             );
         }
     }

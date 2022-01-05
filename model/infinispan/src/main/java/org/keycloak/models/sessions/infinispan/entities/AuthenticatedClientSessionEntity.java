@@ -29,6 +29,8 @@ import org.infinispan.commons.marshall.SerializeWith;
 import org.jboss.logging.Logger;
 import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.util.KeycloakMarshallUtil;
+import org.keycloak.rar.AuthorizationRequestContext;
+
 import java.util.UUID;
 
 /**
@@ -52,6 +54,8 @@ public class AuthenticatedClientSessionEntity extends SessionEntity {
 
     private String currentRefreshToken;
     private int currentRefreshTokenUseCount;
+
+    private AuthorizationRequestContext authorizationRequestContext;
 
     private final UUID id;
 
@@ -113,6 +117,14 @@ public class AuthenticatedClientSessionEntity extends SessionEntity {
 
     public void setCurrentRefreshTokenUseCount(int currentRefreshTokenUseCount) {
         this.currentRefreshTokenUseCount = currentRefreshTokenUseCount;
+    }
+
+    public AuthorizationRequestContext getAuthorizationRequestContext() {
+        return authorizationRequestContext;
+    }
+
+    public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+        this.authorizationRequestContext = authorizationRequestContext;
     }
 
     public UUID getId() {
@@ -182,6 +194,7 @@ public class AuthenticatedClientSessionEntity extends SessionEntity {
 
             MarshallUtil.marshallString(session.getCurrentRefreshToken(), output);
             KeycloakMarshallUtil.marshall(session.getCurrentRefreshTokenUseCount(), output);
+            output.writeObject(session.getAuthorizationRequestContext());
         }
 
 
@@ -202,7 +215,7 @@ public class AuthenticatedClientSessionEntity extends SessionEntity {
 
             sessionEntity.setCurrentRefreshToken(MarshallUtil.unmarshallString(input));
             sessionEntity.setCurrentRefreshTokenUseCount(KeycloakMarshallUtil.unmarshallInteger(input));
-
+            sessionEntity.setAuthorizationRequestContext((AuthorizationRequestContext) input.readObject());
             return sessionEntity;
         }
 

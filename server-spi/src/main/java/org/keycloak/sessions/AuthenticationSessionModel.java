@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.keycloak.models.UserModel;
+import org.keycloak.rar.AuthorizationRequestContext;
 
 /**
  * Represents the state of the authentication. If the login is requested from different tabs of same browser, every browser
@@ -204,4 +205,8 @@ public interface AuthenticationSessionModel extends CommonClientSessionModel {
      * @param clientScopes {@code Set<String>} Can't be {@code null}.
      */
     void setClientScopes(Set<String> clientScopes);
+
+    void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext);
+
+    AuthorizationRequestContext getAuthorizationRequestContext();
 }

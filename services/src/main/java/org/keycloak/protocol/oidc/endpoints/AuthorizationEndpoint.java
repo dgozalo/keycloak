@@ -58,8 +58,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.List;
 import java.util.Map;
 
@@ -316,6 +314,9 @@ public class AuthorizationEndpoint extends AuthorizationEndpointBase {
             for (String paramName : request.getAdditionalReqParams().keySet()) {
                 authenticationSession.setClientNote(LOGIN_SESSION_NOTE_ADDITIONAL_REQ_PARAMS_PREFIX + paramName, request.getAdditionalReqParams().get(paramName));
             }
+        }
+        if(request.getAuthorizationRequestContext() != null) {
+            authenticationSession.setAuthorizationRequestContext(request.getAuthorizationRequestContext());
         }
     }
 
