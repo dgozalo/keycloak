@@ -32,10 +32,10 @@ import org.keycloak.models.sessions.infinispan.changes.SessionEntityWrapper;
 import org.keycloak.models.sessions.infinispan.changes.ClientSessionUpdateTask;
 import org.keycloak.models.sessions.infinispan.changes.SessionUpdateTask;
 import org.keycloak.models.sessions.infinispan.changes.Tasks;
-import org.keycloak.models.sessions.infinispan.changes.UserSessionUpdateTask;
 import org.keycloak.models.sessions.infinispan.changes.sessions.CrossDCLastSessionRefreshChecker;
 import org.keycloak.models.sessions.infinispan.entities.AuthenticatedClientSessionEntity;
-import org.keycloak.models.sessions.infinispan.entities.UserSessionEntity;
+import org.keycloak.rar.AuthorizationRequestContext;
+
 import java.util.UUID;
 
 /**
@@ -275,4 +275,21 @@ public class AuthenticatedClientSessionAdapter implements AuthenticatedClientSes
         return copy;
     }
 
+    @Override
+    public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+        ClientSessionUpdateTask task = new ClientSessionUpdateTask() {
+
+            @Override
+            public void runUpdate(AuthenticatedClientSessionEntity entity) {
+                entity.setAuthorizationRequestContext(authorizationRequestContext);
+            }
+
+        };
+        update(task);
+    }
+
+    @Override
+    public AuthorizationRequestContext getAuthorizationRequestContext() {
+        return entity.getAuthorizationRequestContext();
+    }
 }

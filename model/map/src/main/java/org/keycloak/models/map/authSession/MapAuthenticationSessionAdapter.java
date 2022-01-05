@@ -20,6 +20,7 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.rar.AuthorizationRequestContext;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 
@@ -211,6 +212,17 @@ public class MapAuthenticationSessionAdapter implements AuthenticationSessionMod
         Objects.requireNonNull(clientScopes, "The provided client scopes set can't be null!");
         parent.setUpdated(!Objects.equals(entity.getClientScopes(), clientScopes));
         entity.setClientScopes(new HashSet<>(clientScopes));
+    }
+
+    @Override
+    public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+        parent.setUpdated(!Objects.equals(entity.getAuthorizationRequestContext(), authorizationRequestContext));
+        entity.setAuthorizationRequestContext(authorizationRequestContext);
+    }
+
+    @Override
+    public AuthorizationRequestContext getAuthorizationRequestContext() {
+        return entity.getAuthorizationRequestContext();
     }
 
     @Override

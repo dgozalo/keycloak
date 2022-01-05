@@ -16,6 +16,7 @@
  */
 package org.keycloak.models.map.authSession;
 
+import org.keycloak.rar.AuthorizationRequestContext;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import java.util.HashSet;
@@ -45,6 +46,7 @@ public class MapAuthenticationSessionEntity {
     private Map<String, String> authNotes = new ConcurrentHashMap<>();;
     private Set<String> requiredActions = new HashSet<>();
     private Map<String, String> userSessionNotes = new ConcurrentHashMap<>();
+    private AuthorizationRequestContext authorizationRequestContext;
 
     public Map<String, String> getUserSessionNotes() {
         return userSessionNotes;
@@ -140,5 +142,13 @@ public class MapAuthenticationSessionEntity {
 
     public void setExecutionStatus(Map<String, AuthenticationSessionModel.ExecutionStatus> executionStatus) {
         this.executionStatus = executionStatus;
+    }
+
+    public AuthorizationRequestContext getAuthorizationRequestContext() {
+        return authorizationRequestContext;
+    }
+
+    public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+        this.authorizationRequestContext = authorizationRequestContext;
     }
 }

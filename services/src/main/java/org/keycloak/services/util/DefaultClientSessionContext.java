@@ -41,6 +41,7 @@ import org.keycloak.models.utils.RoleUtils;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
+import org.keycloak.rar.AuthorizationRequestContext;
 import org.keycloak.util.TokenUtil;
 
 /**
@@ -67,10 +68,13 @@ public class DefaultClientSessionContext implements ClientSessionContext {
 
     private Map<String, Object> attributes = new HashMap<>();
 
+    private AuthorizationRequestContext authorizationRequestContext;
+
     private DefaultClientSessionContext(AuthenticatedClientSessionModel clientSession, Set<String> clientScopeIds, KeycloakSession session) {
         this.clientSession = clientSession;
         this.clientScopeIds = clientScopeIds;
         this.session = session;
+        this.authorizationRequestContext = clientSession.getAuthorizationRequestContext();
     }
 
 
@@ -183,6 +187,15 @@ public class DefaultClientSessionContext implements ClientSessionContext {
         return clazz.cast(value);
     }
 
+    @Override
+    public AuthorizationRequestContext getAuthorizationRequestContext() {
+        return this.authorizationRequestContext;
+    }
+
+    @Override
+    public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+        this.authorizationRequestContext = authorizationRequestContext;
+    }
 
     // Loading data
 

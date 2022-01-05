@@ -24,6 +24,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelException;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
+import org.keycloak.rar.AuthorizationRequestContext;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
@@ -220,6 +221,18 @@ public class PersistentAuthenticatedClientSessionAdapter implements Authenticate
     }
 
     @Override
+    public AuthorizationRequestContext getAuthorizationRequestContext() {
+        PersistentClientSessionData entity = getData();
+        return entity.getNotes()==null ? null : entity.getAuthorizationRequestContext();
+    }
+
+    @Override
+    public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+        PersistentClientSessionData entity = getData();
+        entity.setAuthorizationRequestContext(authorizationRequestContext);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || !(o instanceof AuthenticatedClientSessionModel)) return false;
@@ -258,6 +271,8 @@ public class PersistentAuthenticatedClientSessionAdapter implements Authenticate
         private Set<String> protocolMappers;
         @JsonProperty("roles")
         private Set<String> roles;
+        @JsonProperty("authorization_data")
+        private AuthorizationRequestContext authorizationRequestContext;
 
 
         public String getAuthMethod() {
@@ -298,6 +313,14 @@ public class PersistentAuthenticatedClientSessionAdapter implements Authenticate
 
         public void setUserSessionNotes(Map<String, String> userSessionNotes) {
             this.userSessionNotes = userSessionNotes;
+        }
+
+        public AuthorizationRequestContext getAuthorizationRequestContext() {
+            return authorizationRequestContext;
+        }
+
+        public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+            this.authorizationRequestContext = authorizationRequestContext;
         }
 
         public Map<String, Object> getExecutionStatus() {

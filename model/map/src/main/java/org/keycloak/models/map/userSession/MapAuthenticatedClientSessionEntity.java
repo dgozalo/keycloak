@@ -20,6 +20,8 @@ import org.keycloak.common.util.Time;
 import org.keycloak.models.map.common.AbstractEntity;
 
 import org.keycloak.models.map.common.UpdatableEntity;
+import org.keycloak.rar.AuthorizationRequestContext;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,6 +47,8 @@ public class MapAuthenticatedClientSessionEntity extends UpdatableEntity.Impl im
     private String action;
 
     private Map<String, String> notes = new ConcurrentHashMap<>();
+
+    private AuthorizationRequestContext authorizationRequestContext;
 
     private String currentRefreshToken;
     private int currentRefreshTokenUseCount;
@@ -163,6 +167,15 @@ public class MapAuthenticatedClientSessionEntity extends UpdatableEntity.Impl im
 
     public void addNote(String name, String value) {
         this.updated |= !Objects.equals(this.notes.put(name, value), value);
+    }
+
+    public AuthorizationRequestContext getAuthorizationRequestContext() {
+        return authorizationRequestContext;
+    }
+
+    public void setAuthorizationRequestContext(AuthorizationRequestContext authorizationRequestContext) {
+        this.updated |= !Objects.equals(this.authorizationRequestContext, authorizationRequestContext);
+        this.authorizationRequestContext = authorizationRequestContext;
     }
 
     public String getCurrentRefreshToken() {

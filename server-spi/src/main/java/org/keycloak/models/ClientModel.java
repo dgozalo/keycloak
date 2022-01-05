@@ -20,7 +20,6 @@ package org.keycloak.models;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.provider.ProviderEvent;
 import org.keycloak.provider.ProviderEventManager;
