@@ -18,7 +18,6 @@ package org.keycloak.protocol.oidc.rar.parsers;
 
 import org.keycloak.OAuth2Constants;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.protocol.oidc.rar.AuthorizationRequestParserProvider;
 import org.keycloak.rar.AuthorizationRequestContext;
@@ -29,13 +28,9 @@ import org.keycloak.rar.AuthorizationRequestSource;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:dgozalob@redhat.com">Daniel Gozalo</a>
@@ -74,26 +69,11 @@ public class ClientScopeAuthorizationRequestParser implements AuthorizationReque
         if (OAuth2Constants.SCOPE_OPENID.equalsIgnoreCase(requestScope)) {
             return new DynamicScopeRepresentation(requestScope);
         }
-
-        Map<String, ClientScopeModel> scopeModelMap = Stream.of(clientModel.getClientScopes(true), clientModel.getClientScopes(false))
-                .flatMap(map -> map.entrySet().stream()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        Optional<DynamicScopeRepresentation> matchedDynamicScope = scopeModelMap.values().stream()
-                .filter(ClientScopeModel::isDynamicScope)
-                .map(clientScopeModel -> Pattern.compile(clientScopeModel.getDynamicScopeRegexp()))
-                .map(pattern -> pattern.matcher(requestScope))
-                .filter(Matcher::matches)
-                .map(matcher -> new DynamicScopeRepresentation(requestScope, matcher.group(0)))
+        Optional<DynamicScopeRepresentation> matchedDynamicScope = TokenManager.getRequestedClientScopes(requestScope, clientModel)
+            .map(model -> new DynamicScopeRepresentation(model.getName()))
                 .findFirst();
 
-        //TODO: Cache the compiled regexps
-
-        return matchedDynamicScope.orElseGet(() -> {
-            if (scopeModelMap.containsKey(requestScope)) {
-                return new DynamicScopeRepresentation(scopeModelMap.get(requestScope).getName());
-            }
-            return null;
-        });
+        return matchedDynamicScope.orElse(null);
     }
 
     @Override
